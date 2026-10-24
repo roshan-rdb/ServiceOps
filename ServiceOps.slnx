@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ServiceOps.Agents/ServiceOps.Agents.csproj" />
+    <Project Path="src/ServiceOps.Api/ServiceOps.Api.csproj" />
+    <Project Path="src/ServiceOps.Application/ServiceOps.Application.csproj" />
+    <Project Path="src/ServiceOps.Domain/ServiceOps.Domain.csproj" />
+    <Project Path="src/ServiceOps.Infrastructure/ServiceOps.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ServiceOps.Tests/ServiceOps.Tests.csproj" />
+  </Folder>
+</Solution>

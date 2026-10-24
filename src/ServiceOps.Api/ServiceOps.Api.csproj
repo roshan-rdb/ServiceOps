@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceOps.Application\ServiceOps.Application.csproj" />
+    <ProjectReference Include="..\ServiceOps.Agents\ServiceOps.Agents.csproj" />
+    <ProjectReference Include="..\ServiceOps.Infrastructure\ServiceOps.Infrastructure.csproj" />
+    <ProjectReference Include="..\ServiceOps.Domain\ServiceOps.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
