@@ -1,4 +1,5 @@
 ﻿using ServiceOps.Agents.Triage;
+using ServiceOps.Application.Incidents;
 using ServiceOps.Domain.Incidents;
 
 namespace ServiceOps.Api.Endpoints
@@ -19,7 +20,7 @@ namespace ServiceOps.Api.Endpoints
 
                 }
                 var incident = new Incident(Guid.NewGuid(), request.Title.Trim(), request.Description.Trim(), DateTimeOffset.UtcNow);
-                string assessment = await triage.AnalyzeAsync(incident, cancellationToken);
+                IncidentTriageAssessment assessment = await triage.AnalyzeAsync(incident, cancellationToken);
                 return Results.Ok(new { incident.Id, Assessment = assessment });
             });
             return endpoints;
