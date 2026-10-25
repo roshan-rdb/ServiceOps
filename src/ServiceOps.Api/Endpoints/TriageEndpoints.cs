@@ -16,7 +16,7 @@ namespace ServiceOps.Api.Endpoints
             {
                 if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Description))
                 {
-                    return Results.BadRequest(new { error = "Title and description are  required." });
+                    return Results.BadRequest(new { error = "Title and description are required." });
 
                 }
                 var incident = new Incident(Guid.NewGuid(), request.Title.Trim(), request.Description.Trim(), DateTimeOffset.UtcNow);
