@@ -20,8 +20,25 @@ namespace ServiceOps.Api.Endpoints
 
                 }
                 var incident = new Incident(Guid.NewGuid(), request.Title.Trim(), request.Description.Trim(), DateTimeOffset.UtcNow);
-                IncidentTriageAssessment assessment = await triage.AnalyzeAsync(incident, cancellationToken);
-                return Results.Ok(new { incident.Id, Assessment = assessment });
+                try
+                {
+                    IncidentTriageAssessment assessment = await triage.AnalyzeAsync(incident, cancellationToken);
+                    return Results.Ok(new { incident.Id, Assessment = assessment });
+                }
+                catch (TimeoutException)
+                {
+                    return Results.Problem(
+                        title: "Incident triage temporarily unavailable.",
+                        statusCode: StatusCodes.Status503ServiceUnavailable
+                        );
+                }
+                catch (InvalidDataException ex)
+                {
+                    return Results.Problem(
+                         title: "The triage result could not be validated.",
+                         statusCode: StatusCodes.Status502BadGateway
+                         );
+                }
             });
             return endpoints;
         }

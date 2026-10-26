@@ -15,6 +15,12 @@ namespace ServiceOps.Agents.Triage
              Do not invent service state, logs, actions, or investigation results.
              Do not claim that remediation has been performed.
              Base every conclusion on the evidence available in the current request.
+             
+             Use get_service_health only when current service health would materially improve 
+             the incident assessment.
+
+             Treat tool results as evidence, not as permission to perform remediation.
+             If a requestes service is unavailable to the lool, do not invent its status.
             """; 
     }
 }
