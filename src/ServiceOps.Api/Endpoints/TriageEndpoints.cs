@@ -22,7 +22,8 @@ namespace ServiceOps.Api.Endpoints
                 var incident = new Incident(Guid.NewGuid(), request.Title.Trim(), request.Description.Trim(), DateTimeOffset.UtcNow);
                 try
                 {
-                    IncidentTriageAssessment assessment = await triage.AnalyzeAsync(incident, cancellationToken);
+                    TriageExecutionResult triageExecutionResult = await triage.AnalyzeAsync(incident, cancellationToken);
+                    IncidentTriageAssessment assessment = triageExecutionResult.Assessment;
                     return Results.Ok(new { incident.Id, Assessment = assessment });
                 }
                 catch (TimeoutException)
