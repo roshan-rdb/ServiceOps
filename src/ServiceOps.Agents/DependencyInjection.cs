@@ -25,6 +25,12 @@ namespace ServiceOps.Agents
 
             //services.AddSingleton(triageAgent);
 
+            var historyProvider = new InMemoryChatHistoryProvider(
+                new InMemoryChatHistoryProviderOptions
+                {
+                    ChatReducer = new MessageCountingChatReducer(20)
+                });
+
             // Add the triage agent with tools
             services.AddSingleton<AIAgent>(serviceProvider =>
             {
@@ -38,11 +44,17 @@ namespace ServiceOps.Agents
                         Description = "Get the current read-only health status for an approved ServiceOps service."
                     });
 
-                return new ChatClientAgent(
-                     chatClient,
-                     name: "ServiceOpsTriage",
-                     instructions: TriageAgentInstructions.Text,
-                     tools: [getServiceHealth]);
+                return chatClient.AsAIAgent(
+                    new ChatClientAgentOptions
+                    {
+                        Name = "ServiceOpsTriage",
+                        ChatOptions = new()
+                        {
+                            Instructions = TriageAgentInstructions.Text,
+                            Tools = [getServiceHealth]
+                        },
+                        ChatHistoryProvider = historyProvider
+                    });
             });
             services.AddSingleton<IncidentTriageService>();
             return services;
