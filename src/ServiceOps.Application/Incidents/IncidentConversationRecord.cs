@@ -8,7 +8,7 @@ public sealed record IncidentConversationRecord(
     DateTimeOffset UpdatedAtUtc
  );
 
-public interface IIncidentConversationRecord
+public interface IIncidentConversationStore
 {
     Task<IncidentConversationRecord> GetAsync(
         Guid incidentId,

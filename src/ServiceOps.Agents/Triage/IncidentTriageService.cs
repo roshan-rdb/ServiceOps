@@ -75,7 +75,7 @@ namespace ServiceOps.Agents.Triage
             timeoutSource.CancelAfter(ExecutionTimeout);
             AgentResponse<IncidentTriageAssessment> response = await agent.RunAsync<IncidentTriageAssessment>
                 (
-                    IncidentTriagePrompt.Build(incident),
+                    IncidentTriagePrompt.BuildUpdate(incident, update),
                     session,
                     cancellationToken: timeoutSource.Token
                  );
