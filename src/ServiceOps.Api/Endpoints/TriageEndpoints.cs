@@ -12,7 +12,11 @@ namespace ServiceOps.Api.Endpoints
         public static IEndpointRouteBuilder MapTriageEndpoints(this IEndpointRouteBuilder endpoints)
         {
            
-            endpoints.MapPost("/api/incidents/triage", async (IncidentIntakeRequest request, IncidentTriageService triage, CancellationToken cancellationToken)
+            endpoints.MapPost("/api/incidents/triage", async (
+                IncidentIntakeRequest request,
+                IIncidentConversationStore conversationStore,
+                IncidentTriageService triage, 
+                CancellationToken cancellationToken)
             =>
             {
                 if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Description))
@@ -24,6 +28,13 @@ namespace ServiceOps.Api.Endpoints
                 try
                 {
                     TriageExecutionResult triageExecutionResult = await triage.AnalyzeAsync(incident, cancellationToken);
+
+                    var conversation = new IncidentConversationRecord(
+                        incident, 
+                        triageExecutionResult.AgentSessionJson, 
+                        DateTimeOffset.UtcNow);
+                    await conversationStore.SaveAsync(conversation, cancellationToken);
+
                     IncidentTriageAssessment assessment = triageExecutionResult.Assessment;
                     return Results.Ok(new { incident.Id, Assessment = assessment });
                 }
