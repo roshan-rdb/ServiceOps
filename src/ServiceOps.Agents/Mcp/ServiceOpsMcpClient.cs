@@ -14,7 +14,7 @@ public static class ServiceOpsMcpClient
                 Arguments = [
                     "run",
                     "--project",
-                    "src/ServiceOps.OperationsMcp"
+                    "../ServiceOps.OperationsMcp/ServiceOps.OperationsMcp.csproj",
                     ]
             });
 

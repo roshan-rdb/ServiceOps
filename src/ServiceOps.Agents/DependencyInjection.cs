@@ -2,6 +2,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using ModelContextProtocol.Client;
 using OpenAI;
 using OpenAI.Chat;
 using ServiceOps.Agents.Knowledge;
@@ -15,7 +16,10 @@ namespace ServiceOps.Agents
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddServiceOpsAgents(this IServiceCollection services, string model, string apiKey)
+        public static IServiceCollection AddServiceOpsAgents(this IServiceCollection services, 
+            string model, 
+            string apiKey, 
+            IReadOnlyList<McpClientTool> mcpTools)
         {
             IChatClient chatClient =
                 new OpenAIClient(apiKey).
@@ -72,7 +76,8 @@ namespace ServiceOps.Agents
                         ChatOptions = new()
                         {
                             Instructions = TriageAgentInstructions.Text,
-                            Tools = [getServiceHealth]
+                            Tools = [getServiceHealth,
+                            ..mcpTools]
                         },
                         ChatHistoryProvider = historyProvider,
                         AIContextProviders = [knowledgeProvider]
