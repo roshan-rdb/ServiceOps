@@ -5,6 +5,7 @@
     <Project Path="src/ServiceOps.Application/ServiceOps.Application.csproj" />
     <Project Path="src/ServiceOps.Domain/ServiceOps.Domain.csproj" />
     <Project Path="src/ServiceOps.Infrastructure/ServiceOps.Infrastructure.csproj" />
+    <Project Path="src/ServiceOps.OperationsMcp/ServiceOps.OperationsMcp.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ServiceOps.Tests/ServiceOps.Tests.csproj" />
