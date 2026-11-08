@@ -1,16 +1,16 @@
-﻿using Google.Protobuf.Reflection;
-using Microsoft.Agents.AI;
+﻿using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Client;
 using OpenAI;
-using OpenAI.Chat;
+using ServiceOps.Agents.Diagnostics;
 using ServiceOps.Agents.Knowledge;
+using ServiceOps.Agents.Risk;
+using ServiceOps.Agents.Team;
 using ServiceOps.Agents.Tools;
 using ServiceOps.Agents.Triage;
 using ServiceOps.Application.Knowledge;
 using ServiceOps.Application.Operations;
-using System.Xml.Linq;
 
 namespace ServiceOps.Agents
 {
@@ -25,24 +25,15 @@ namespace ServiceOps.Agents
                 new OpenAIClient(apiKey).
                     GetChatClient(model).
                     AsIChatClient();
-
-            //AIAgent triageAgent = chatClient.AsAIAgent(
-            //    name: "ServiceOpsTriage",
-            //    instructions: TriageAgentInstructions.Text);
-
-            //services.AddSingleton(triageAgent);
-
+           
             var historyProvider = new InMemoryChatHistoryProvider(
                 new InMemoryChatHistoryProviderOptions
                 {
                     ChatReducer = new MessageCountingChatReducer(20)
                 });
 
-            
-           
-
             // Add the triage agent with tools
-            services.AddSingleton<AIAgent>(serviceProvider =>
+            services.AddSingleton<ServiceOpsAgentTeam>(serviceProvider =>
             {
                 IServiceHealthReader healthReader = serviceProvider.GetRequiredService<IServiceHealthReader>();
                 var healthTool = new ServiceHealthTool(healthReader);
@@ -69,20 +60,90 @@ namespace ServiceOps.Agents
                     searchOptions
                 );
 
-                return chatClient.AsAIAgent(
+                ChatClientAgent knowledgeAgent = chatClient.AsAIAgent(
                     new ChatClientAgentOptions
                     {
+                        Id = ServiceOpsAgentIds.Knowledge,
+                        Name = "KnowledgeSpecialist",
+                        Description = "Analyzes approved operational knowledge.",
+                        ChatOptions = new()
+                        {
+                            Instructions = KnowledgeAgentInstructions.Text,
+                        },
+                        AIContextProviders = [knowledgeProvider]
+                    });
+
+                ChatClientAgent diagnosticsAgent = chatClient.AsAIAgent(
+                    new ChatClientAgentOptions
+                    {
+                        Id = ServiceOpsAgentIds.Diagnostics,
+                        Name = "DiagnosticsSpecialist",
+                        Description = "Investigates live operational evidence.",
+                        ChatOptions = new()
+                        {
+                            Instructions = DiagnosticsAgentInstructions.Text,
+                            Tools = [getServiceHealth, 
+                                    .. mcpTools]
+                        }
+                    });
+
+                ChatClientAgent riskAgent = chatClient.AsAIAgent(
+                    new ChatClientAgentOptions
+                    {
+                        Id = ServiceOpsAgentIds.Risk,
+                        Name = "RiskSpecialist",
+                        Description = "Review operational severity, escalation risk.",
+                        ChatOptions = new()
+                        {
+                            Instructions = RiskAgentInstructions.Text
+                        },
+                        AIContextProviders = [knowledgeProvider]
+                    });
+
+                AIFunction knowledgeFunction = knowledgeAgent.AsAIFunction(
+                    new AIFunctionFactoryOptions
+                    {
+                        Name = "consult_knowledge_specialist",
+                        Description = "Consult approved operational runbooks and documentation."
+                    });
+
+                AIFunction diagnosticsFunction = diagnosticsAgent.AsAIFunction(
+                    new AIFunctionFactoryOptions
+                    {
+                        Name = "consult_diagnostics_specialist",
+                        Description = "Investigate current service, deployment and change evidence"
+                    });
+
+                AIFunction riskFunction = riskAgent.AsAIFunction(
+                    new AIFunctionFactoryOptions
+                    {
+                        Name = "consult_risk_specialist",
+                        Description = "Review severity, uncertainity, escalation and human-review risk."
+                    });
+
+                ChatClientAgent coordinator = chatClient.AsAIAgent(
+                    new ChatClientAgentOptions
+                    {
+                        Id = ServiceOpsAgentIds.Coordinator,
                         Name = "ServiceOpsTriage",
+                        Description = "Coordinates specialist analysis and produces the final triage assessment.",
                         ChatOptions = new()
                         {
                             Instructions = TriageAgentInstructions.Text,
-                            Tools = [getServiceHealth,
-                            ..mcpTools]
+                            Tools = [knowledgeFunction, diagnosticsFunction, riskFunction]
                         },
-                        ChatHistoryProvider = historyProvider,
-                        AIContextProviders = [knowledgeProvider]
+                        ChatHistoryProvider = historyProvider
                     });
+
+                return new ServiceOpsAgentTeam(
+                    coordinator,
+                    knowledgeAgent,
+                    diagnosticsAgent,
+                    riskAgent);
             });
+           
+            services.AddSingleton<AIAgent>(
+                serviceProvider => serviceProvider.GetRequiredService<ServiceOpsAgentTeam>().Coordinator);
             services.AddSingleton<IncidentTriageService>();
             return services;
         }
