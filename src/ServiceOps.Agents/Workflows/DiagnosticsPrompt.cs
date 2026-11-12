@@ -1,6 +1,6 @@
 ﻿using ServiceOps.Domain.Incidents;
 
-namespace ServiceOps.Agents.Diagnostics;
+namespace ServiceOps.Agents.Workflows;
 
 internal static class DiagnosticsPrompt
 {

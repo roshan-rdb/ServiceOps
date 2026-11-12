@@ -2,9 +2,9 @@
 using Microsoft.Agents.AI.Workflows;
 using ServiceOps.Application.Workflows;
 
-namespace ServiceOps.Agents.Diagnostics;
+namespace ServiceOps.Agents.Workflows;
 
-internal sealed partial class DiagnosticsWorkflowExecutor(AIAgent diagnosticsAgent) : Executor("Diagnostics")
+internal sealed partial class KnowledgeWorkflowExecutor(AIAgent KnowledgeAgent) : Executor("Executor")
 {
     protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
     {
@@ -16,11 +16,10 @@ internal sealed partial class DiagnosticsWorkflowExecutor(AIAgent diagnosticsAge
         IncidentWorkflowContext context,
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken)
-    {        string prompt = DiagnosticsPrompt.Build(context.Incident);
-
-        AgentResponse<DiagnosticsReport> response = 
-            await diagnosticsAgent.RunAsync<DiagnosticsReport>(prompt, cancellationToken: cancellationToken);
-
-        return context with { Diagnostics = response.Result };
+    {
+        string prompt = KnowledgePrompt.Build(context.Incident, context.Diagnostics!);
+        AgentResponse<KnowledgeReport> response =
+            await KnowledgeAgent.RunAsync<KnowledgeReport>(prompt, cancellationToken: cancellationToken);
+        return context with { Knowledge = response.Result };
     }
 }

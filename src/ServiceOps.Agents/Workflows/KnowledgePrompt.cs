@@ -1,7 +1,7 @@
 ﻿using ServiceOps.Application.Workflows;
 using ServiceOps.Domain.Incidents;
 
-namespace ServiceOps.Agents.Knowledge;
+namespace ServiceOps.Agents.Workflows;
 
 internal static class KnowledgePrompt
 {

@@ -2,7 +2,7 @@
 using Microsoft.Agents.AI.Workflows;
 using ServiceOps.Application.Workflows;
 
-namespace ServiceOps.Agents.Risk;
+namespace ServiceOps.Agents.Workflows;
 
 internal sealed partial class RiskWorkflowExecutor(AIAgent riskAgent) : Executor("RiskReview")
 {
