@@ -1,6 +1,6 @@
 ﻿namespace ServiceOps.Agents.Team;
 
-internal static class ServiceOpsAgentIds
+public static class ServiceOpsAgentIds
 {
     public const string Coordinator = "serviceops-triage";
     public const string Knowledge = "serviceops-knowledge";

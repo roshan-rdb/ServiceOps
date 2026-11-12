@@ -1,4 +1,5 @@
-﻿using ServiceOps.Application.Incidents;
+﻿using ServiceOps.Agents.Team;
+using ServiceOps.Application.Incidents;
 
 namespace ServiceOps.Tests
 {
@@ -18,6 +19,22 @@ namespace ServiceOps.Tests
             IReadOnlyList<string> errors = IncidentTriageAssessmentValidator.Validate(assessment);
             Assert.Contains(errors, error=> error.Contains("Evidence"));
         }
+
+        [Fact]
+        public void AgentTeam_UsesStableUniqueId()
+        {
+            string[] ids =
+                [
+                    ServiceOpsAgentIds.Coordinator,
+                    ServiceOpsAgentIds.Knowledge,
+                    ServiceOpsAgentIds.Diagnostics,
+                    ServiceOpsAgentIds.Risk
+                ];
+
+            Assert.Equal(ids.Length, ids.Distinct().Count());
+        }
+
+
     }
             
 }

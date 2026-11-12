@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceOps.Agents\ServiceOps.Agents.csproj" />
     <ProjectReference Include="..\..\src\ServiceOps.Application\ServiceOps.Application.csproj" />
   </ItemGroup>
 
