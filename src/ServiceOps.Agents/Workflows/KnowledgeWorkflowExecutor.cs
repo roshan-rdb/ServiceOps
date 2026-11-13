@@ -6,10 +6,6 @@ namespace ServiceOps.Agents.Workflows;
 
 internal sealed partial class KnowledgeWorkflowExecutor(AIAgent KnowledgeAgent) : Executor("Executor")
 {
-    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
-    {
-        throw new NotImplementedException();
-    }
 
     [MessageHandler]
     public async ValueTask<IncidentWorkflowContext> HandleAsync(

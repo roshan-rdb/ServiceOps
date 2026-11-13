@@ -4,13 +4,8 @@ using ServiceOps.Application.Workflows;
 
 namespace ServiceOps.Agents.Workflows;
 
-internal class IncidentDecisionExecutor() : Executor("Decision")
+internal sealed partial class IncidentDecisionExecutor() : Executor("Decision")
 {
-    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
-    {
-        throw new NotImplementedException();
-    }
-
     [MessageHandler]
     public ValueTask<IncidentWorkflowDecision> HandleAsync(
         IncidentWorkflowContext context,

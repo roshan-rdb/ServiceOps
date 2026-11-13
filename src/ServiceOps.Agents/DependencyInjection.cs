@@ -9,6 +9,7 @@ using ServiceOps.Agents.Risk;
 using ServiceOps.Agents.Team;
 using ServiceOps.Agents.Tools;
 using ServiceOps.Agents.Triage;
+using ServiceOps.Agents.Workflows;
 using ServiceOps.Application.Knowledge;
 using ServiceOps.Application.Operations;
 
@@ -134,17 +135,24 @@ namespace ServiceOps.Agents
                         },
                         ChatHistoryProvider = historyProvider
                     });
-
-                return new ServiceOpsAgentTeam(
+                var team = new ServiceOpsAgentTeam(
                     coordinator,
                     knowledgeAgent,
                     diagnosticsAgent,
                     riskAgent);
+
+                //services.AddSingleton<ServiceOpsIncidentWorkflowFactory>();
+
+               // services.AddSingleton<ServiceOpsAgentTeam>
+
+                return team;
             });
            
             services.AddSingleton<AIAgent>(
                 serviceProvider => serviceProvider.GetRequiredService<ServiceOpsAgentTeam>().Coordinator);
             services.AddSingleton<IncidentTriageService>();
+            services.AddSingleton<ServiceOpsIncidentWorkflowFactory>();
+            services.AddSingleton<IncidentWorkflowService>();
             return services;
         }
     }

@@ -6,11 +6,6 @@ namespace ServiceOps.Agents.Workflows;
 
 internal sealed partial class RiskWorkflowExecutor(AIAgent riskAgent) : Executor("RiskReview")
 {
-    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
-    {
-        throw new NotImplementedException();
-    }
-
     [MessageHandler]
     public async ValueTask<IncidentWorkflowContext> HandleAsync(
         IncidentWorkflowContext context,

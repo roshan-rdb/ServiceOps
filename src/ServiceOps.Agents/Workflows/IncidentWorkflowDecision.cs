@@ -1,6 +1,5 @@
-﻿using ServiceOps.Application.Workflows;
-
-namespace ServiceOps.Agents.Workflows;
+﻿using ServiceOps.Application.Incidents;
+using ServiceOps.Application.Workflows;
 
 public enum WorkflowRoute
 {
@@ -8,4 +7,9 @@ public enum WorkflowRoute
     HumanReview
 }
 public sealed record IncidentWorkflowDecision(IncidentWorkflowContext Context, WorkflowRoute Route);
+
+public sealed record IncidentWorkflowResult(
+    Guid IncidentId,
+    IncidentTriageAssessment Assessment,
+    WorkflowRoute Route);
 

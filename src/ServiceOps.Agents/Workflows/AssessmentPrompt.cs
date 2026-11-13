@@ -1,4 +1,5 @@
-﻿using ServiceOps.Application.Workflows;
+﻿using ServiceOps.Agents.Triage;
+using ServiceOps.Application.Workflows;
 using ServiceOps.Domain.Incidents;
 
 namespace ServiceOps.Agents.Workflows;
@@ -10,5 +11,6 @@ internal static class AssessmentPrompt
         DiagnosticsReport diagnostics,
         KnowledgeReport knowledge,
         RiskReview risk) => 
-            $"""{incident.ToString()} {diagnostics.ToString()} {knowledge.ToString()} {risk.ToString()} """;
+            $"""{IncidentTriagePrompt.Build(incident)} {diagnostics.Summary} {knowledge.Summary} {risk.RequiresHumamReview} {risk.Severity.ToString()}""";
 }
+            
