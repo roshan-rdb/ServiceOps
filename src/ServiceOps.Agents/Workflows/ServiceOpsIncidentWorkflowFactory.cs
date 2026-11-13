@@ -49,6 +49,7 @@ public class ServiceOpsIncidentWorkflowFactory
 
         return builder.WithName("serviceops-incident-triage")
                        .WithOutputFrom(complete, review)
+                      //.WithOutputFrom<IncidentWorkflowResult>(complete, review)
                        .Build();
     }
 }

@@ -6,18 +6,14 @@ namespace ServiceOps.Agents.Workflows;
 internal sealed partial class CompletionExecutor() : Executor("Complete")
 {
     [MessageHandler]
-    public async ValueTask HandleAsync(
+    public ValueTask<IncidentWorkflowResult> HandleAsync(
         IncidentWorkflowDecision decision,
         IWorkflowContext context,
         CancellationToken cancellationToken)
     {
         IncidentTriageAssessment assessment = decision.Context.Assessment!;
-        await context.YieldOutputAsync(
-            new IncidentWorkflowResult
-            (
-                decision.Context.Incident.Id,
-                assessment,
-                WorkflowRoute.Complete), 
-            cancellationToken);
+        var result = new IncidentWorkflowResult(decision.Context.Incident.Id, assessment, WorkflowRoute.Complete);
+        return ValueTask.FromResult(result);
+            
     }
 }
