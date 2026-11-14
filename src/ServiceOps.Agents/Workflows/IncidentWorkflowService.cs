@@ -18,6 +18,13 @@ public sealed class IncidentWorkflowService(ServiceOpsIncidentWorkflowFactory fa
                                     .LastOrDefault()
                                     ?? throw new InvalidOperationException("Workflow produced no output");
 
+        //Visualizing the workflow
+        Console.WriteLine("Mermaid String:");
+        Console.WriteLine(workflow.ToMermaidString());
+
+        Console.WriteLine("\n Dot String:");
+        Console.WriteLine(workflow.ToDotString());
+
         return output.As<IncidentWorkflowResult>() ?? throw new InvalidDataException("Unexpected workflow output.");
     }
 }

@@ -135,15 +135,12 @@ namespace ServiceOps.Agents
                         },
                         ChatHistoryProvider = historyProvider
                     });
+
                 var team = new ServiceOpsAgentTeam(
                     coordinator,
                     knowledgeAgent,
                     diagnosticsAgent,
                     riskAgent);
-
-                //services.AddSingleton<ServiceOpsIncidentWorkflowFactory>();
-
-               // services.AddSingleton<ServiceOpsAgentTeam>
 
                 return team;
             });
