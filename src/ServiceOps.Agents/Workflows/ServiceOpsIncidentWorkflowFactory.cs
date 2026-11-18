@@ -1,5 +1,6 @@
 ﻿using Microsoft.Agents.AI.Workflows;
 using ServiceOps.Agents.Team;
+using ServiceOps.Application.Workflows;
 
 namespace ServiceOps.Agents.Workflows;
 
@@ -33,6 +34,12 @@ public class ServiceOpsIncidentWorkflowFactory
 
         var review = new HumanReviewExecutor();
 
+        var reviewRequest = new HumanReviewRequestExecutor();
+
+        RequestPort<IncidentApprovalRequest, IncidentApprovalResponse> approvalPort =
+            RequestPort.Create<IncidentApprovalRequest, IncidentApprovalResponse>("IncidentApproval");
+
+        var approvalOutcome = new ApprovalOutcomeExecutor();
         // Build madnatory execution chain
         WorkflowBuilder builder = new WorkflowBuilder(intake)
                                     .AddEdge(intake, diagnostics)
@@ -42,10 +49,17 @@ public class ServiceOpsIncidentWorkflowFactory
                                     .AddEdge(assessment, decision);
 
         //Deterministic routing
-        builder.AddSwitch(decision,
-            switchBuilder => switchBuilder.AddCase(RouteIs(WorkflowRoute.Complete), complete)
-                                          .AddCase(RouteIs(WorkflowRoute.HumanReview), review)
-                                          .WithDefault(review));
+        //builder.AddSwitch(decision,
+        //    switchBuilder => switchBuilder.AddCase(RouteIs(WorkflowRoute.Complete), complete)
+        //                                  .AddCase(RouteIs(WorkflowRoute.HumanReview), review)
+        //                                  .WithDefault(review));
+
+        builder
+            .AddEdge(decision,reviewRequest,condition: RouteIs(WorkflowRoute.HumanReview))
+            .AddEdge(reviewRequest,approvalPort)
+            .AddEdge(approvalPort, approvalOutcome);
+
+        builder.AddEdge(decision, complete, condition: RouteIs(WorkflowRoute.Complete));
 
         return builder.WithName("serviceops-incident-triage")
                        .WithOutputFrom(complete, review)
