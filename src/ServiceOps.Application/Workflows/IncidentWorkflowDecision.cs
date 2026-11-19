@@ -3,8 +3,9 @@ using ServiceOps.Application.Workflows;
 
 public enum WorkflowRoute
 {
-    Complete,
-    HumanReview
+    Completed,
+    AwaitingHumanApproval,
+    Rejected
 }
 public sealed record IncidentWorkflowDecision(IncidentWorkflowContext Context, WorkflowRoute Route);
 

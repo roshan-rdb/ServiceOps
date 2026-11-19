@@ -27,6 +27,14 @@ builder.Services.AddSingleton<IIncidentConversationStore>(
             "incidents")
         )
     );
+builder.Services.AddSingleton(
+    new FileSystemJsonCheckpointStore(
+        Path.Combine(
+            builder.Environment.ContentRootPath,
+            "App_Data",
+            "incidents")
+        )
+    );
 builder.Services.AddSingleton<IOperationalKnowledgeSearch, InMemoryOperationalKnowledgeSearch>();
 var app = builder.Build();
 

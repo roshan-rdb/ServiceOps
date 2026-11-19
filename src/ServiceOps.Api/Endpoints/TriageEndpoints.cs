@@ -1,8 +1,10 @@
-﻿using ModelContextProtocol.Protocol;
+﻿using Microsoft.Agents.AI.Workflows;
+using ModelContextProtocol.Protocol;
 using OpenTelemetry.Trace;
 using ServiceOps.Agents.Triage;
 using ServiceOps.Agents.Workflows;
 using ServiceOps.Application.Incidents;
+using ServiceOps.Application.Workflows;
 using ServiceOps.Domain.Incidents;
 using System.Globalization;
 
@@ -19,6 +21,7 @@ namespace ServiceOps.Api.Endpoints
                 IncidentIntakeRequest request,
                 //IIncidentConversationStore conversationStore,
                 //IncidentTriageService triage, 
+                CheckpointManager checkpointManager,
                 IncidentWorkflowService workflow,
                 CancellationToken cancellationToken)
             =>
@@ -39,16 +42,23 @@ namespace ServiceOps.Api.Endpoints
                     //    DateTimeOffset.UtcNow);
                     //await conversationStore.SaveAsync(conversation, cancellationToken);
 
-                    IncidentWorkflowResult result = await workflow.RunAsync(incident, cancellationToken);
+                    WorkflowExecutionStatus result = await workflow.RunAsync(incident, cancellationToken);
 
                     //IncidentTriageAssessment assessment = triageExecutionResult.Assessment;
                     //return Results.Ok(new { incident.Id, Assessment = assessment });
 
+                    //return Results.Ok(new
+                    //{
+                    //    result.IncidentId,
+                    //    result.Assessment,
+                    //    Status = result.Route == WorkflowRoute.HumanReview ? "HumanReviewRequired" : "TriageComplete"
+                    //});
+
                     return Results.Ok(new
                     {
-                        result.IncidentId,
-                        result.Assessment,
-                        Status = result.Route == WorkflowRoute.HumanReview ? "HumanReviewRequired" : "TriageComplete"
+                        result.Completed,
+                        result.RequiresApproval,
+                        result.Result
                     });
                 }
                 catch (TimeoutException)

@@ -4,6 +4,9 @@
     <ProjectReference Include="..\ServiceOps.Application\ServiceOps.Application.csproj" />
     <ProjectReference Include="..\ServiceOps.Domain\ServiceOps.Domain.csproj" />
   </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Agents.AI.Workflows" Version="1.28.0" />
+	</ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
