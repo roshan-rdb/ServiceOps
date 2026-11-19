@@ -21,7 +21,7 @@ internal sealed partial class ApprovalOutcomeExecutor() : Executor("ApprovalOutc
         {
             throw new InvalidOperationException("Approval does not match the pending incident.");
         }
-        WorkflowRoute route = response.Approved ? WorkflowRoute.Complete : WorkflowRoute.HumanReview;
+        WorkflowRoute route = response.Approved ? WorkflowRoute.Completed : WorkflowRoute.AwaitingHumanApproval;
 
         return new IncidentWorkflowResult(response.IncidentId, decision.Context.Assessment!, route);
     }

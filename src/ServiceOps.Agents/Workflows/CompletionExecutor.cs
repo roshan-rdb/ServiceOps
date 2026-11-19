@@ -12,7 +12,7 @@ internal sealed partial class CompletionExecutor() : Executor("Complete")
         CancellationToken cancellationToken)
     {
         IncidentTriageAssessment assessment = decision.Context.Assessment!;
-        var result = new IncidentWorkflowResult(decision.Context.Incident.Id, assessment, WorkflowRoute.Complete);
+        var result = new IncidentWorkflowResult(decision.Context.Incident.Id, assessment, WorkflowRoute.Completed);
         return ValueTask.FromResult(result);
             
     }

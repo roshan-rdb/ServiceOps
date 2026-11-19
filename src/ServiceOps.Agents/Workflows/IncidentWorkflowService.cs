@@ -7,11 +7,11 @@ namespace ServiceOps.Agents.Workflows;
 
 public sealed class IncidentWorkflowService(ServiceOpsIncidentWorkflowFactory factory, CheckpointManager checkpointManager)
 {
-    public async Task<WorkflowExecutionStatus> RunAsync(Incident incident, CancellationToken cancellationToken)
+    public async Task<WorkflowExecutionStatus> StartAsync(Incident incident, CancellationToken cancellationToken)
     {
-        string workflowSessionId = incident.Id.ToString("N");
-
         Workflow workflow = factory.Create();
+        string sessionId = incident.Id.ToString("N");
+
         //Run run = await InProcessExecution.RunAsync(
         //    workflow,
         //    incident,
@@ -21,7 +21,7 @@ public sealed class IncidentWorkflowService(ServiceOpsIncidentWorkflowFactory fa
             workflow,
             incident,
             checkpointManager,
-            workflowSessionId,
+            sessionId,
             cancellationToken: cancellationToken);
 
         //WorkflowOutputEvent output = run.NewEvents
@@ -31,22 +31,21 @@ public sealed class IncidentWorkflowService(ServiceOpsIncidentWorkflowFactory fa
 
         await foreach (WorkflowEvent workflowEvent in run.WatchStreamAsync(cancellationToken))
         {
+            if (workflowEvent is RequestInfoEvent)
+            {
+                return new WorkflowExecutionStatus (incident.Id, "AwaitingHumanApproval");
+            }
             if (workflowEvent is WorkflowOutputEvent output)
             {
+                IncidentWorkflowResult result = output.As<IncidentWorkflowResult>()
+                    ?? throw new InvalidDataException("Invalid workflow output.");
+
                 return new WorkflowExecutionStatus(
-                    Completed: true,
-                    RequiresApproval: false,
-                    Result: output.As<IncidentWorkflowResult>());
-            }
-            if (workflowEvent is RequestInfoEvent requestEvent)
-            {
-                return new WorkflowExecutionStatus(
-                    Completed: false,
-                    RequiresApproval: true,
-                    Result: null);
+                    incident.Id,
+                    "Completed",
+                    result);
             }
         }
-
         //Visualizing the workflow
         Console.WriteLine("Mermaid String:");
         Console.WriteLine(workflow.ToMermaidString());
@@ -54,6 +53,6 @@ public sealed class IncidentWorkflowService(ServiceOpsIncidentWorkflowFactory fa
         Console.WriteLine("\n Dot String:");
         Console.WriteLine(workflow.ToDotString());
 
-        return null;
+        throw new InvalidOperationException("Workflow ended without a terminal state.");
     }
 }

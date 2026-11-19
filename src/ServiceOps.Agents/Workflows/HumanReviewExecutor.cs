@@ -13,7 +13,7 @@ internal sealed partial class HumanReviewExecutor() : Executor("HumanReview")
         var result = new IncidentWorkflowResult(
             decision.Context.Incident.Id,
             decision.Context.Assessment!,
-            WorkflowRoute.HumanReview
+            WorkflowRoute.AwaitingHumanApproval
             );
 
         return ValueTask.FromResult(result);

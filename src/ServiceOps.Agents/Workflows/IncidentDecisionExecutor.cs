@@ -19,7 +19,7 @@ internal sealed partial class IncidentDecisionExecutor() : Executor("Decision")
 
         WorkflowRoute route = risk.RequiresHumamReview || assessment.RequiresHumanReview
                                 || risk.Severity == IncidentSeverity.Critical
-                                ? WorkflowRoute.HumanReview : WorkflowRoute.Complete;
+                                ? WorkflowRoute.AwaitingHumanApproval : WorkflowRoute.Completed;
 
         return ValueTask.FromResult(
             new IncidentWorkflowDecision(context, route)

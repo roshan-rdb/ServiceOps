@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /src/ServiceOps.Api/App_Data/incidents
+/src/ServiceOps.Api/App_Data/workflow-checkpoints

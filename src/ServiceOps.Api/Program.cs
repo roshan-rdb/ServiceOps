@@ -1,13 +1,16 @@
+using Microsoft.Agents.AI.Workflows;
+using Microsoft.Agents.AI.Workflows.Checkpointing;
+using ModelContextProtocol.Client;
 using ServiceOps.Agents;
+using ServiceOps.Agents.Mcp;
 using ServiceOps.Api.Endpoints;
 using ServiceOps.Application.Incidents;
 using ServiceOps.Application.Knowledge;
 using ServiceOps.Application.Operations;
 using ServiceOps.Infrastructure.Incidents;
-using ServiceOps.Infrastructure.Operations;
 using ServiceOps.Infrastructure.Knowledge;
-using ModelContextProtocol.Client;
-using ServiceOps.Agents.Mcp;
+using ServiceOps.Infrastructure.Operations;
+using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 string model = Environment.GetEnvironmentVariable("Model") ?? throw new InvalidOperationException("AI:Model is not  configured.");
@@ -27,14 +30,21 @@ builder.Services.AddSingleton<IIncidentConversationStore>(
             "incidents")
         )
     );
-builder.Services.AddSingleton(
-    new FileSystemJsonCheckpointStore(
+
+
+DirectoryInfo checkpointDirectory = new(
         Path.Combine(
-            builder.Environment.ContentRootPath,
-            "App_Data",
-            "incidents")
-        )
-    );
+        builder.Environment.ContentRootPath,
+        "App_Data",
+        "workflow-checkpoints"));
+checkpointDirectory.Create();
+
+var checkpoitStore = new FileSystemJsonCheckpointStore(checkpointDirectory);
+var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+CheckpointManager checkpointManager = CheckpointManager.CreateJson(checkpoitStore, jsonOptions);
+builder.Services.AddSingleton(checkpointManager);
+builder.Services.AddSingleton<ICheckpointStore<JsonElement>>(checkpoitStore);
+
 builder.Services.AddSingleton<IOperationalKnowledgeSearch, InMemoryOperationalKnowledgeSearch>();
 var app = builder.Build();
 

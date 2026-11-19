@@ -42,7 +42,7 @@ namespace ServiceOps.Api.Endpoints
                     //    DateTimeOffset.UtcNow);
                     //await conversationStore.SaveAsync(conversation, cancellationToken);
 
-                    WorkflowExecutionStatus result = await workflow.RunAsync(incident, cancellationToken);
+                    WorkflowExecutionStatus result = await workflow.StartAsync(incident, cancellationToken);
 
                     //IncidentTriageAssessment assessment = triageExecutionResult.Assessment;
                     //return Results.Ok(new { incident.Id, Assessment = assessment });
@@ -53,15 +53,20 @@ namespace ServiceOps.Api.Endpoints
                     //    result.Assessment,
                     //    Status = result.Route == WorkflowRoute.HumanReview ? "HumanReviewRequired" : "TriageComplete"
                     //});
-
-                    return Results.Ok(new
+                    
+                    if(result.Status == "AwaitingHumanApproval")
                     {
-                        result.Completed,
-                        result.RequiresApproval,
-                        result.Result
-                    });
+                        return Results.Accepted($"/api/incidents/{incident.Id}", 
+                            new { incident.Id, Status = "AwaitingHumanApproval" });
+                    }
+
+                    return Results.Ok(
+                        new WorkflowExecutionStatus(
+                            result.IncidentId,
+                            "Completed",
+                            result.Result));
                 }
-                catch (TimeoutException)
+                catch (TimeoutException) 
                 {
                     return Results.Problem(
                         title: "Incident triage temporarily unavailable.",

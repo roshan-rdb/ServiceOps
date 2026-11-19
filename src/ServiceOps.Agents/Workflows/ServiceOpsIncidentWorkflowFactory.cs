@@ -32,8 +32,6 @@ public class ServiceOpsIncidentWorkflowFactory
 
         var complete = new CompletionExecutor();
 
-        var review = new HumanReviewExecutor();
-
         var reviewRequest = new HumanReviewRequestExecutor();
 
         RequestPort<IncidentApprovalRequest, IncidentApprovalResponse> approvalPort =
@@ -55,14 +53,14 @@ public class ServiceOpsIncidentWorkflowFactory
         //                                  .WithDefault(review));
 
         builder
-            .AddEdge(decision,reviewRequest,condition: RouteIs(WorkflowRoute.HumanReview))
+            .AddEdge(decision,reviewRequest,condition: RouteIs(WorkflowRoute.AwaitingHumanApproval))
             .AddEdge(reviewRequest,approvalPort)
             .AddEdge(approvalPort, approvalOutcome);
 
-        builder.AddEdge(decision, complete, condition: RouteIs(WorkflowRoute.Complete));
+        builder.AddEdge(decision, complete, condition: RouteIs(WorkflowRoute.Completed));
 
         return builder.WithName("serviceops-incident-triage")
-                       .WithOutputFrom(complete, review)
+                       .WithOutputFrom(complete, approvalOutcome)
                        .Build();
     }
 }
