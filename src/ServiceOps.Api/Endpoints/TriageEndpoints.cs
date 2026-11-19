@@ -1,17 +1,13 @@
 ﻿using Microsoft.Agents.AI.Workflows;
-using ModelContextProtocol.Protocol;
-using OpenTelemetry.Trace;
-using ServiceOps.Agents.Triage;
 using ServiceOps.Agents.Workflows;
-using ServiceOps.Application.Incidents;
 using ServiceOps.Application.Workflows;
 using ServiceOps.Domain.Incidents;
-using System.Globalization;
 
 namespace ServiceOps.Api.Endpoints
 {
     public sealed record IncidentIntakeRequest(string Title, string Description);
     public sealed record IncedentUpdateRequest(String Update);
+    public sealed record IncidentApprovalInput(bool Approved, string? Comment);
     public static class TriageEndpoints
     {
         public static IEndpointRouteBuilder MapTriageEndpoints(this IEndpointRouteBuilder endpoints)
@@ -19,9 +15,6 @@ namespace ServiceOps.Api.Endpoints
            
             endpoints.MapPost("/api/incidents/triage", async (
                 IncidentIntakeRequest request,
-                //IIncidentConversationStore conversationStore,
-                //IncidentTriageService triage, 
-                CheckpointManager checkpointManager,
                 IncidentWorkflowService workflow,
                 CancellationToken cancellationToken)
             =>
@@ -34,25 +27,7 @@ namespace ServiceOps.Api.Endpoints
                 var incident = new Incident(Guid.NewGuid(), request.Title.Trim(), request.Description.Trim(), DateTimeOffset.UtcNow);
                 try
                 {
-                    //TriageExecutionResult triageExecutionResult = await triage.AnalyzeAsync(incident, cancellationToken);
-
-                    //var conversation = new IncidentConversationRecord(
-                    //    incident, 
-                    //    triageExecutionResult.AgentSessionJson, 
-                    //    DateTimeOffset.UtcNow);
-                    //await conversationStore.SaveAsync(conversation, cancellationToken);
-
                     WorkflowExecutionStatus result = await workflow.StartAsync(incident, cancellationToken);
-
-                    //IncidentTriageAssessment assessment = triageExecutionResult.Assessment;
-                    //return Results.Ok(new { incident.Id, Assessment = assessment });
-
-                    //return Results.Ok(new
-                    //{
-                    //    result.IncidentId,
-                    //    result.Assessment,
-                    //    Status = result.Route == WorkflowRoute.HumanReview ? "HumanReviewRequired" : "TriageComplete"
-                    //});
                     
                     if(result.Status == "AwaitingHumanApproval")
                     {
@@ -82,38 +57,73 @@ namespace ServiceOps.Api.Endpoints
                 }
             });
 
-            endpoints.MapPost("/api/incidents/{incidentId:guid}/updates",
-                async (Guid incidentId,
-                      IncedentUpdateRequest request,
-                      IIncidentConversationStore conversationStore,
-                      IncidentTriageService triage,
-                      CancellationToken cancellationToken) =>
+            endpoints.MapPost("/api/incidents/{incidentId:guid}", async (
+                 Guid incidentId,
+                 IncidentApprovalInput request,
+                 IncidentWorkflowService workflow,
+                 CancellationToken cancellationToken)
+                =>
+            {
+                try
                 {
-                    IncidentConversationRecord? conversation =
-                        await conversationStore.GetAsync(incidentId, cancellationToken);
-                    if (conversation == null)
-                    {
-                        return Results.NotFound();
-                    }
-                    if (string.IsNullOrWhiteSpace(request.Update) || request.Update.Trim().Length > 200)
-                    {
-                        return Results.BadRequest(new { error = "A valid incident Update is required." });
-                    }
-                    TriageExecutionResult result = await triage.ContinueAsync(
-                        conversation.Incidents,
-                        conversation.AgentSessionJson,
-                        request.Update.Trim(),
+                    var incidentWorkflowResult = await workflow.ResumeApprovalAsync(
+                        incidentId,
+                        request.Approved,
+                        Guid.NewGuid().ToString(), 
+                        request.Comment, 
                         cancellationToken);
 
-                    await conversationStore.SaveAsync(
-                        conversation with
-                        {
-                            AgentSessionJson = result.AgentSessionJson,
-                            UpdatedAtUtc = DateTimeOffset.UtcNow
-                        },
-                        cancellationToken);
-                    return Results.Ok(new { incidentId, Assessment = result.Assessment });
-                });
+                    return Results.Ok(incidentWorkflowResult);
+                }
+                catch (TimeoutException)
+                {
+                    return Results.Problem(
+                        title: "Incident triage temporarily unavailable.",
+                        statusCode: StatusCodes.Status503ServiceUnavailable
+                        );
+                }
+                catch (InvalidDataException ex)
+                {
+                    return Results.Problem(
+                         title: "The triage result could not be validated.",
+                         statusCode: StatusCodes.Status502BadGateway
+                         );
+                }
+
+            });
+
+            //endpoints.MapPost("/api/incidents/{incidentId:guid}/updates",
+            //    async (Guid incidentId,
+            //          IncedentUpdateRequest request,
+            //          IIncidentConversationStore conversationStore,
+            //          IncidentTriageService triage,
+            //          CancellationToken cancellationToken) =>
+            //    {
+            //        IncidentConversationRecord? conversation =
+            //            await conversationStore.GetAsync(incidentId, cancellationToken);
+            //        if (conversation == null)
+            //        {
+            //            return Results.NotFound();
+            //        }
+            //        if (string.IsNullOrWhiteSpace(request.Update) || request.Update.Trim().Length > 200)
+            //        {
+            //            return Results.BadRequest(new { error = "A valid incident Update is required." });
+            //        }
+            //        TriageExecutionResult result = await triage.ContinueAsync(
+            //            conversation.Incidents,
+            //            conversation.AgentSessionJson,
+            //            request.Update.Trim(),
+            //            cancellationToken);
+
+            //        await conversationStore.SaveAsync(
+            //            conversation with
+            //            {
+            //                AgentSessionJson = result.AgentSessionJson,
+            //                UpdatedAtUtc = DateTimeOffset.UtcNow
+            //            },
+            //            cancellationToken);
+            //        return Results.Ok(new { incidentId, Assessment = result.Assessment });
+            //    });
 
             return endpoints;
         }

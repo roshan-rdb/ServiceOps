@@ -147,9 +147,7 @@ namespace ServiceOps.Agents
            
             services.AddSingleton<AIAgent>(
                 serviceProvider => serviceProvider.GetRequiredService<ServiceOpsAgentTeam>().Coordinator);
-            services.AddSingleton<IncidentTriageService>();
-            services.AddSingleton<ServiceOpsIncidentWorkflowFactory>();
-            services.AddSingleton<IncidentWorkflowService>();
+           
             return services;
         }
     }

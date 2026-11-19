@@ -3,6 +3,8 @@ using Microsoft.Agents.AI.Workflows.Checkpointing;
 using ModelContextProtocol.Client;
 using ServiceOps.Agents;
 using ServiceOps.Agents.Mcp;
+using ServiceOps.Agents.Triage;
+using ServiceOps.Agents.Workflows;
 using ServiceOps.Api.Endpoints;
 using ServiceOps.Application.Incidents;
 using ServiceOps.Application.Knowledge;
@@ -43,9 +45,15 @@ var checkpoitStore = new FileSystemJsonCheckpointStore(checkpointDirectory);
 var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 CheckpointManager checkpointManager = CheckpointManager.CreateJson(checkpoitStore, jsonOptions);
 builder.Services.AddSingleton(checkpointManager);
+builder.Services.AddSingleton(checkpoitStore);
 builder.Services.AddSingleton<ICheckpointStore<JsonElement>>(checkpoitStore);
 
 builder.Services.AddSingleton<IOperationalKnowledgeSearch, InMemoryOperationalKnowledgeSearch>();
+
+builder.Services.AddSingleton<IncidentTriageService>();
+builder.Services.AddSingleton<ServiceOpsIncidentWorkflowFactory>();
+builder.Services.AddSingleton<IncidentWorkflowService>();
+
 var app = builder.Build();
 
 // Map endpoints
