@@ -27,6 +27,10 @@ public sealed class IncidentWorkflowService(
         {
             if (workflowEvent is RequestInfoEvent)
             {
+                //Visualizing the workflow
+                Console.WriteLine("Mermaid String:");
+                Console.WriteLine(workflow.ToMermaidString());
+                
                 return new WorkflowExecutionStatus (incident.Id, "AwaitingHumanApproval");
             }
             if (workflowEvent is WorkflowOutputEvent output)
@@ -34,18 +38,17 @@ public sealed class IncidentWorkflowService(
                 IncidentWorkflowResult result = output.As<IncidentWorkflowResult>()
                     ?? throw new InvalidDataException("Invalid workflow output.");
 
+                //Visualizing the workflow
+                Console.WriteLine("Mermaid String:");
+                Console.WriteLine(workflow.ToMermaidString());
+
                 return new WorkflowExecutionStatus(
                     incident.Id,
                     "Completed",
                     result);
             }
         }
-        //Visualizing the workflow
-        Console.WriteLine("Mermaid String:");
-        Console.WriteLine(workflow.ToMermaidString());
-
-        Console.WriteLine("\n Dot String:");
-        Console.WriteLine(workflow.ToDotString());
+        
 
         throw new InvalidOperationException("Workflow ended without a terminal state.");
     }
@@ -90,6 +93,9 @@ public sealed class IncidentWorkflowService(
         {
             if (workflowEvent is WorkflowOutputEvent output)
             {
+                //Visualizing the workflow
+                Console.WriteLine("Mermaid String:");
+                Console.WriteLine(workflow.ToMermaidString());
                 return output.As<IncidentWorkflowResult>() ?? throw new InvalidDataException("Invalid workflow output");
             }
         }
